@@ -92,10 +92,17 @@ def maximum(list):
 
     # iterate through the list
     for i in list:
-        # if current item is larger than our current minimum
+        # if current item is larger than our
+        #  current minimum
         if i > maximum:
             # item becomes our new minimum
             maximum = i
 
     # return our minimum
     return maximum
+
+
+
+"""
+These Functions  are a
+"""

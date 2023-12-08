@@ -7,6 +7,6 @@ This script:
 - Outputs this information to the terminal
 """
 
-# Import all our math functions
+# Import all our math and input functions
 from mathsfunctions import *
-
+from inputfunctions import *
