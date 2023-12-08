@@ -10,7 +10,7 @@ if the string can be cast as one. Else it will return "None"
 
 Loosely imitates the function of string.isnumeric()
 """
-def TryInt(string):
+def tryInt(string):
     # We use a try except statement to see if the string can be cast as an int
     try:
         # Tries to cast our string as an int, returns int if successful
@@ -30,7 +30,7 @@ A valid input is one which does not break the following criteria:
 Validation for these rules works on a "innocent until proven guilty" basis
 We assume input is valid until it breaks one of the above criteria
 """
-def InputInteger(message):
+def inputInteger(message):
     # We create a boolean variable to store if input is valid or not
     validInput = False
 
@@ -43,10 +43,18 @@ def InputInteger(message):
         validInput = True
 
         # As user for input using message parameter
-        userInput = TryInt(input(message))
+        userInput = input(message)
 
-        # if our TryInt() function returns none, input is not an int
-        if userInput == None:
+        # We check the input for our escape phrase "stop"
+        # The escape character is used to stop inputting numbers
+        # We use .lower() because this doesn't need to be case sensitive
+        if message.lower() == "stop":
+            return None
+
+        intInput = tryInt(userInput)
+
+        # if our tryInt() function returns none, input is not an int
+        if intInput == None:
             # input is not valid
             validInput = False
 
