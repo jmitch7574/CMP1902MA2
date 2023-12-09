@@ -34,8 +34,8 @@ def inputInteger(message):
     # We create a boolean variable to store if input is valid or not
     validInput = False
 
-    # This is our return variable, initialised with an empty string
-    userInput = ""
+    # This is our return variable, initialised with 0
+    intInput = 0
 
     # Repeatedly ask the user for an input until a valid one is received
     while not validInput:
@@ -48,7 +48,7 @@ def inputInteger(message):
         # We check the input for our escape phrase "stop"
         # The escape character is used to stop inputting numbers
         # We use .lower() because this doesn't need to be case sensitive
-        if message.lower() == "stop":
+        if userInput.lower() == "stop":
             return None
 
         intInput = tryInt(userInput)
@@ -62,4 +62,4 @@ def inputInteger(message):
             print("Input must be a valid integer, please try again")
 
     # return our valid input
-    return userInput
+    return intInput
