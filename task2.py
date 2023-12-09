@@ -41,7 +41,9 @@ As for how this should be done?
     - With 4 different states, Blank, Red, Yellow, Obstruction
     - Functions for changing states
     - aaand maybe functions for checking connect-4s (depends on which class it goes better in, who knows maybe both)
-
+- Most likely a class for a player as well
+    - Contains the players score, whether or not they have their special disc
+    
 Both functions will have special __str__ functions for outputting to the terminal
 This is what an example board will look like (shrunk because space)
 
@@ -54,3 +56,8 @@ This is what an example board will look like (shrunk because space)
 That's the game plan
 TODO work on it tomorrow, im eepy
 """
+
+from connect4classes import *
+
+board = GameBoard(3, 2)
+print(board)
