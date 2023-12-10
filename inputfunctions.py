@@ -1,5 +1,6 @@
 """
 This file contains all functions for taking inputs and sanitisation
+This file is used by both task1.py and task2.py
 """
 
 """
@@ -28,6 +29,13 @@ A valid input is one which does not break the following criteria:
 
 Validation for these rules works on a "innocent until proven guilty" basis
 We assume input is valid until it breaks one of the above criteria
+
+We include the option for a "stop code" which will cancel the input
+If no stop code is included when the funciton is called then we do not allow cancel
+If a stop code is provided we check if the input matches the stop code and return None
+
+Stop code will mostly be used for inputting multiple integers (like in task 1)
+But of course we still have the option of forcing an integer input
 """
 def inputInteger(message, stopCode = None):
     # We create a boolean variable to store if input is valid or not
