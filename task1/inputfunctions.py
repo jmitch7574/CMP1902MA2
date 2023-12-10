@@ -1,6 +1,5 @@
 """
 This file contains all functions for taking inputs and sanitisation
-This file is used by both task1.py and task2.py
 """
 
 """
@@ -30,7 +29,7 @@ A valid input is one which does not break the following criteria:
 Validation for these rules works on a "innocent until proven guilty" basis
 We assume input is valid until it breaks one of the above criteria
 """
-def inputInteger(message):
+def inputInteger(message, stopCode = None):
     # We create a boolean variable to store if input is valid or not
     validInput = False
 
@@ -48,7 +47,7 @@ def inputInteger(message):
         # We check the input for our escape phrase "stop"
         # The escape character is used to stop inputting numbers
         # We use .lower() because this doesn't need to be case sensitive
-        if userInput.lower() == "stop":
+        if stopCode and userInput.lower() == stopCode:
             return None
 
         intInput = tryInt(userInput)

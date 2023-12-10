@@ -57,7 +57,18 @@ That's the game plan
 TODO work on it tomorrow, im eepy
 """
 
+# Import our classes for our game and other wacky libraries
 from connect4classes import *
+import time
 
-board = GameBoard(3, 2)
-print(board)
+def PlayGame():
+    board = Game(3, 2)
+
+    
+
+
+if __name__=="main":
+    Playing = True
+
+    while Playing:
+        PlayGame()

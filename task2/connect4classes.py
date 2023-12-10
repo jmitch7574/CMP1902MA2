@@ -24,7 +24,7 @@ and the board in general becomes slightly harder to visualise
 (worth it in my opinion to avoid spaghetti code everywhere else)
 
 """
-class GameBoard:
+class Game:
 
     """
     Initialise function
@@ -33,10 +33,16 @@ class GameBoard:
     def __init__(self, obstructionSizeX, obstructionSizeY):
 
         # Initialise our 2D grid array
-        self.grid = []
+        self.grid = self.generateBoard(obstructionSizeX, obstructionSizeY)
 
+    
+    def generateBoard(self, obstructionSizeX, obstructionSizeY):
+        
         # Generate the starting x co-ordinate (bottom left) of our obstruction block
         obstructionX = random.randint(0, 7 - obstructionSizeX)
+
+        # Initialise 2d array
+        grid = []
 
         for x in range(7):
             column = []
@@ -52,10 +58,47 @@ class GameBoard:
                 isObstruction = obstructionXCheck and obstructionYCheck
 
                 # Generate cell and add it to the current column
-                column.append(Cell(isObstruction))
+                newCell = Cell(isObstruction)
+                column.append(newCell)
+
 
             # Add generated column to our griddy
-            self.grid.append(column)
+            grid.append(column)
+
+        # return generated grid
+        return grid
+
+    """
+    This function will try to place a player's disc in a given column
+    We iterate through all the spaces in the column (starting at 0, the bottom of the board)
+    We keep iterating until we find an empty space, at which point we change the cell to a players disc and return true
+    This function will return false if it can't place a disc
+    """
+    def placeDisc(self, player, columnNo, isSpecialDisc):
+
+        # Columns are labelled ingame as 1-6
+        columnNo -= 1
+
+        # Iterate through all cells in our column
+        for r in range(6):
+            # Assign current cell to variable
+            cell = self.grid[columnNo][r]
+
+            # Use cell function to see if it is empty
+            if cell.isEmpty():
+
+                # Set the first empty cell to the players disc
+                cell.changeType(player)
+
+                # Successfully placed disc, return true
+                return True
+            
+        # This line of code is only reached if we failed to place disc, return false
+        return False
+
+
+
+
 
     """
     Override string cast function to make the board game look nice when printed out
