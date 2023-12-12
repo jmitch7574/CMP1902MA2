@@ -112,7 +112,7 @@ class Game:
                 player1Score += player1CellScore
                 player2Score += player2CellScore
         
-        return player1Score / 4, player2Score / 4
+        return player1Score, player2Score
 
 
     """
@@ -213,41 +213,30 @@ class Cell:
 
         combinations = []
 
+        ### We check what possible connect4s this cell can start with
+        canConnectUp = y + 3 <= 5
+        canConnectRight = x + 3 <= 6
+        canConnectUpRight = canConnectUp and canConnectRight
+        canConnectDownRight = y - 3 >= 0 and canConnectRight
+
+        upCombination = []
+        rightCombination = []
+        upRightCombination = []
+        downRightCombination = []
+
         ## Horizontal Checks
         for i in range(4):
-            if x - i >= 0 and x - i + 3 <= 6:
-                combinationCells = []
-                for j in range(4):
-                    combinationCells.append(self.gameBoard.grid[x - i + j][ y])
-                combinations.append(combinationCells)
+            if canConnectUp: upCombination.append(self.gameBoard.grid[x][y + i])
+            if canConnectRight: rightCombination.append(self.gameBoard.grid[x + i][y])
+            if canConnectUpRight: upRightCombination.append(self.gameBoard.grid[x + i][y + i])
+            if canConnectDownRight: downRightCombination.append(self.gameBoard.grid[x + i][y - i])
 
-        ## Vertical Checks
-        for i in range(4):
-            if y - i >= 0 and y - i + 3 <= 5:
-                combinationCells = []
-                for j in range(4):
-                    combinationCells.append(self.gameBoard.grid[x][ y - i + j])
-                combinations.append(combinationCells)
-
-        # Diagonal Checks - 1
-        for i in range(4):
-            if (x - i >= 0 and x - i + 3 <= 6) and (y - i >= 0 and y - i + 3 <= 5):
-                combinationCells = []
-                for j in range(4):
-                    combinationCells.append(self.gameBoard.grid[x - i + j][y - i + j])
-                combinations.append(combinationCells)
         
-        
-        # Diagonal Checks - 2
-        for i in range(4):
-            if (x - i >= 0 and x - i + 3 <= 6) and (y - i >= 0 and y - i + 3 <= 5):
-                combinationCells = []
-                for j in range(4):
-                    k = 3 - j
-                    print(str(x-i+j) + " " + str(y-i+k))
-                    combinationCells.append(self.gameBoard.grid[x - i + j][y - i + k])
+        if canConnectUp: combinations.append(upCombination)
+        if canConnectRight: combinations.append(rightCombination)
+        if canConnectUpRight: combinations.append(upRightCombination)
+        if canConnectDownRight: combinations.append(downRightCombination)
 
-                combinations.append(combinationCells)
     
         for combination in combinations:
             # If the cells in the combination match
