@@ -59,16 +59,50 @@ TODO work on it tomorrow, im eepy
 
 # Import our classes for our game and other wacky libraries
 from connect4classes import *
-import time
+from inputfunctions import *
 
 def PlayGame():
-    board = Game(3, 2)
 
-    
+    # Boolean variable, Player 1's turn when True, Player 2's turn when False
+    player1Turn = True
+
+    # Initialise Player Scores
+    player1Score = 0
+    player2Score = 0
+
+    # Boolean variable, Game continues while true, game ends when false
+    playing = True
+
+    obstructionSizeX, obstructionSizeY = GameSettings()
+
+    board = Game(obstructionSizeX, obstructionSizeY)
+
+    while playing:
+        print(board)
+        print(f"\n Player 1 Score: {player1Score}\n Player 2 Score: {player2Score}")
+
+        playerAction = inputAction(player1Turn)
+        print(playerAction)
+
+        if playerAction:
+            if playerAction[0] == "p":
+                board.placeDisc("r" if player1Turn else "y", playerAction[1], False)
+
+        # Invert our player boolean, switching which player turn it is
+        player1Turn = not player1Turn
+
+        player1Score, player2Score = board.checkScores()
+
+def GameSettings():
+    obstructionSizeX = inputInteger("Please enter the width of the obstruction: ", min=0, max=7)
+    obstructionSizeY = inputInteger("Please enter the height of the obstruction: ", min=0, max=6)
+
+    return obstructionSizeX, obstructionSizeY
 
 
-if __name__=="main":
+if __name__== "__main__":
     Playing = True
 
     while Playing:
         PlayGame()
+

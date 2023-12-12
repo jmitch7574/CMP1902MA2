@@ -58,7 +58,7 @@ class Game:
                 isObstruction = obstructionXCheck and obstructionYCheck
 
                 # Generate cell and add it to the current column
-                newCell = Cell(isObstruction)
+                newCell = Cell(isObstruction, self)
                 column.append(newCell)
 
 
@@ -97,7 +97,22 @@ class Game:
         return False
 
 
+    """
+    This function will run through each cell and check to see if it is part of a connect4
+    We run through each cell, each cell will check if all possible connect4s that can be made which include it
+    We tally up all the connect4s the cells come back with and divide it by 4 (or how many discs make up a connect4)
+    """
+    def checkScores(self):
+        player1Score = 0
+        player2Score = 0
 
+        for x in range(7):
+            for y in range(6):
+                player1CellScore, player2CellScore = self.grid[x][y].checkConnectFours()
+                player1Score += player1CellScore
+                player2Score += player2CellScore
+        
+        return player1Score / 4, player2Score / 4
 
 
     """
@@ -106,12 +121,17 @@ class Game:
     """
 
     def __str__(self):
+
+        separator = "\n------------------------------------\n"
+
         # We initialise the string that we're going to return
-        returnString = ""
+        returnString = "\n"
+
+        # Column Headings to our output
+        returnString += "  1   2   3   4   5   6   7"
 
         # We use these giant lines to separate rows. and \n to put them on separate lines
-        returnString += "------------------------------------\n"
-
+        returnString += separator
         #iterate through rows
         # we use reversed function because otherwise the bottom of the board (index 0) would be printed first (top)
         # while we wanted it printed last (bottom)
@@ -125,7 +145,7 @@ class Game:
                 rowString += f" {self.grid[c][r]} |"
 
             # Add another row separator and a new line
-            rowString += "\n------------------------------------\n"
+            rowString += separator
 
             # Add the row to our return string
             returnString += rowString
@@ -142,11 +162,13 @@ gameBoardIcons = {
 }
 
 class Cell:
-    def __init__(self, isObstruct):
+    def __init__(self, isObstruct, gameBoard):
         if isObstruct:
             self.type = "o"
         else:
             self.type = "e"
+
+        self.gameBoard = gameBoard
 
     def changeType(self, type):
         self.type = type
@@ -159,3 +181,80 @@ class Cell:
 
     def __str__(self):
         return gameBoardIcons[self.type]
+    
+    def getPosition(self):
+        
+        # Iterate through every cell in the board until we find a match
+        for x in range(7):
+            for y in range(6):
+                if self.gameBoard.grid[x][y] == self:
+                    return x, y
+        
+        # Code should never reeach this point
+        print("This error should not occur, if you are reading this message I'm impressed")
+
+    """
+    This function will check for all possible connect4s this cell can make
+    We check verticals, horizontals and diagonals separately
+
+    For each direction this cell will:
+        - The cell will generate 4 sets of 4 cells
+        - These are all possible combinations of a connect4 in the given direction
+        - We go through each set of cells and check if they all match a players color
+
+
+    We use min and max functions to ensure that the cell doesn't check for cells outside
+    """
+    def checkConnectFours(self):
+        x, y = self.getPosition()
+
+        player1Total = 0
+        player2Total = 0
+
+        combinations = []
+
+        ## Horizontal Checks
+        for i in range(4):
+            if x - i >= 0 and x - i + 3 <= 6:
+                combinationCells = []
+                for j in range(4):
+                    combinationCells.append(self.gameBoard.grid[x - i + j][ y])
+                combinations.append(combinationCells)
+
+        ## Vertical Checks
+        for i in range(4):
+            if y - i >= 0 and y - i + 3 <= 5:
+                combinationCells = []
+                for j in range(4):
+                    combinationCells.append(self.gameBoard.grid[x][ y - i + j])
+                combinations.append(combinationCells)
+
+        # Diagonal Checks - 1
+        for i in range(4):
+            if (x - i >= 0 and x - i + 3 <= 6) and (y - i >= 0 and y - i + 3 <= 5):
+                combinationCells = []
+                for j in range(4):
+                    combinationCells.append(self.gameBoard.grid[x - i + j][y - i + j])
+                combinations.append(combinationCells)
+        
+        
+        # Diagonal Checks - 2
+        for i in range(4):
+            if (x - i >= 0 and x - i + 3 <= 6) and (y - i >= 0 and y - i + 3 <= 5):
+                combinationCells = []
+                for j in range(4):
+                    k = 3 - j
+                    print(str(x-i+j) + " " + str(y-i+k))
+                    combinationCells.append(self.gameBoard.grid[x - i + j][y - i + k])
+
+                combinations.append(combinationCells)
+    
+        for combination in combinations:
+            # If the cells in the combination match
+            if combination[0].getType() == combination[1].getType() == combination[2].getType() == combination[3].getType():
+                if combination[0].getType() == "r":
+                    player1Total += 1
+                if combination[0].getType() == "y":
+                    player2Total += 1
+
+        return player1Total, player2Total
