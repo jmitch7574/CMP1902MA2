@@ -21,7 +21,7 @@ numbers = []
 # keep asking the user for input while true
 while inputtingNumbers:
     # get user input using inputInteger function in inputfunctions.py
-    value = inputInteger("Please enter a valid integer number, or enter 'stop' to stop entering numbers: ")
+    value = inputInteger("Please enter a valid integer number, or enter 'stop' to stop entering numbers: ", stopCode="stop")
 
     # If 'stop' is entered then inputInteger will return None
     if value == None:
