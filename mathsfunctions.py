@@ -167,3 +167,19 @@ def getPrimes(list):
     # return prime numbers
     return primes
 
+"""
+This function takes 3 integer inputs
+The first input is our given value
+The second input is our lower-bound value
+The third input is our upper-bound value
+
+The lower-bound and upperbound values default to none to allow the given number to only be 
+clamped in one way
+"""
+def clamp(value, _min=None, _max=None):
+    if _max and value > _max:
+        return _max
+    elif _min and value < min:
+        return _min
+    else:
+        return value
