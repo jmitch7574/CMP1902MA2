@@ -174,6 +174,11 @@ def inputAction(player1):
     # If the input isn't an int, or it is an int but not a valid column
     if not column or not 1 <= column <= 7:
         print("Invalid Column Number, skipping turn")
+        return False
+
+    if time.time() - startTime > 5:
+        print("Action must be inputted within five seconds, skipping turn")
+        return False
 
     # Return both action and collumn
     return [action, column]

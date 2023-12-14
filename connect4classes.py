@@ -4,7 +4,7 @@ We have 4 classes, one for the game board, one for the cells of the board, and o
 """
 
 import random
-
+from mathsfunctions import *
 
 """
 The Gameboard stores all cells
@@ -86,12 +86,32 @@ class Game:
 
             # Use cell function to see if it is empty
             if cell.isEmpty():
+                
+                # If the disk placed is our super special bye bye destructo disc 
+                if isSpecialDisc:
+                    # Iterate throgh a 3x3 area deleting all cells
+                    for x in range(-1, 2):
+                        # It is important we delete from top down using reverse
+                        # Because as soon as we destroy a disc the ones above will fall down instantly
+                        # Causing us to delete incorrect cells
+                        for y in reversed(range(-1, 2)):
+                            cellX = columnNo + x
+                            cellY = r + y
+                            # If the cell to delete isn't on the board, do nothing
+                            if cellX < 0  or cellX > 6 or cellY < 0 or cellY > 5:
+                                continue
 
-                # Set the first empty cell to the players disc
-                cell.changeType(player)
+                            
+                            self.grid[columnNo + x][r + y].destroy()
 
-                # Successfully placed disc, return true
-                return True
+
+
+                else:
+                    # Set the first empty cell to the players disc
+                    cell.changeType(player)
+
+                    # Successfully placed disc, return true
+                    return True
             
         # This line of code is only reached if we failed to place disc, return false
         return False
@@ -179,6 +199,17 @@ class Cell:
     def isEmpty(self):
         return self.type == "e"
 
+    def destroy(self):
+        x, y = self.getPosition()
+
+
+        # OBSTRUCTIONS ARE FUCKING INVINCIBLE!!!
+        if self.type == "o":
+            return
+        
+        self.gameBoard.grid[x].append(Cell(False, self.gameBoard))
+        self.gameBoard.grid[x].remove(self)
+
     def __str__(self):
         return gameBoardIcons[self.type]
     
@@ -194,18 +225,33 @@ class Cell:
         print("This error should not occur, if you are reading this message I'm impressed")
 
     """
-    This function will check for all possible connect4s this cell can make
-    We check verticals, horizontals and diagonals separately
+    This function will take a given cell and check if it can make a connect4 in the following directions:
+        - Up
+        - Right
+        - Diagonal Up and Right
+        - Diagonal Down and Right
 
-    For each direction this cell will:
-        - The cell will generate 4 sets of 4 cells
-        - These are all possible combinations of a connect4 in the given direction
-        - We go through each set of cells and check if they all match a players color
-
+    First it checks if it has a disc in it, there's no point running the rest of the script if its never gonna come up with anyhting
+    that's just wasing precious computing power which could be used for playing fortnite
+    
+    In each direction it will
+    - Check if there are 4 cells in that direction to check (e.g a disc at the top of the board won't be able to make a connect4 upwards)
+    - If there are 4 cells, then it will add up all these cells into a list 
+    - This list is essentially a combination of all cells that make up a possible connect4
+    - All of these combinations all get added into a second list
+    - All combinations in this list will get iterated through and for each combinmation:
+        - We check if all cells are the same type (e.g all red, all yellow)
+        - If they are all red we incriment player1's score
+        - If they are yellow we incriment player2's score
 
     We use min and max functions to ensure that the cell doesn't check for cells outside
     """
     def checkConnectFours(self):
+
+        # Don't continue with the function if this cell doesn't have a disc
+        if self.type not in ["r", "y"]: 
+            return 0, 0
+
         x, y = self.getPosition()
 
         player1Total = 0
@@ -224,7 +270,7 @@ class Cell:
         upRightCombination = []
         downRightCombination = []
 
-        ## Horizontal Checks
+        ## Add all 4 cells that make up the different connections to their respective lists
         for i in range(4):
             if canConnectUp: upCombination.append(self.gameBoard.grid[x][y + i])
             if canConnectRight: rightCombination.append(self.gameBoard.grid[x + i][y])
