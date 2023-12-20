@@ -136,13 +136,34 @@ class Game:
 
 
     """
+    A function that checks if the gameboard is full (our game end criteria)
+    Iterates through every cell in the grid, returning false and breaking out
+    as soon as an empty one is found (grid cannot be full)
+
+    If the function finishes iterating, and can't find any empty cells
+    then the board is full and returns True
+    """
+    def endGameCheck(self):
+        # double for loop to iterate through 2D array
+        for column in self.grid:
+            for cell in column:
+                # Is current cell empty?
+                if cell.isEmpty():
+                    # Return false and break out loop
+                    return False
+
+        # No empty cells found, grid is full, return true
+        return True
+
+
+    """
     Override string cast function to make the board game look nice when printed out
     all about those ✨ asthetics ✨
     """
 
     def __str__(self):
 
-        separator = "\n------------------------------------\n"
+        separator = "\n-----------------------------\n"
 
         # We initialise the string that we're going to return
         returnString = "\n"
@@ -173,15 +194,30 @@ class Game:
         # return our board as a string
         return returnString
 
-            
+"""
+Dictionary that contians string representations of our 
+different cell types
+"""
 gameBoardIcons = {
-    "e": "  ",
-    "r": "🔴",
-    "y": "🟡",
-    "o": "⬛"
+    "e": " ",
+    "r": "O",
+    "y": "X",
+    "o": "█"
 }
 
+"""
+the individual cells have their own class to
+just to contain some functions a cell can perform
+is this at all memory efficient? no.
+does it make things a tad easier to program? hell yeah
+"""
 class Cell:
+    
+    """
+    Initialisation function
+    if this cell is an obstruction, then change type accordingly
+    store a reference to the gameboard
+    """
     def __init__(self, isObstruct, gameBoard):
         if isObstruct:
             self.type = "o"
@@ -190,29 +226,56 @@ class Cell:
 
         self.gameBoard = gameBoard
 
-    def changeType(self, type):
-        self.type = type
+
+    """
+    get and set functions for the "type" attribute
+    """
 
     def getType(self):
         return self.type
 
+    def changeType(self, type):
+        self.type = type
+
+    """
+    return true if the cell is empty
+    returns false if the cell is an obstruction, or has a player disc
+    """
     def isEmpty(self):
         return self.type == "e"
 
-    def destroy(self):
-        x, y = self.getPosition()
+    """
+    Deletes the cell from the column
+    Due to how the grid is structured, once a cell at position x is removed
+    from the column list, then the cell at position x + 1 will automatically
+    now be at position x
 
+    Columns need to maintain a specific length so once a cell is deleted
+    then a new empty cell is appended (placed at the top)
+    """
+    def destroy(self):
+        # Get cell's position
+        x, y = self.getPosition()
 
         # OBSTRUCTIONS ARE FUCKING INVINCIBLE!!!
         if self.type == "o":
             return
         
+        # remove cell and add empty cell at the top of the column
         self.gameBoard.grid[x].append(Cell(False, self.gameBoard))
         self.gameBoard.grid[x].remove(self)
 
+    """
+    use the gameBoardIcons dictionary
+    return string representation of cell's type
+    """
     def __str__(self):
         return gameBoardIcons[self.type]
     
+    """
+    get the x and y co-ordinates (as indexes) of the current cell's
+    position on the game's board
+    """
     def getPosition(self):
         
         # Iterate through every cell in the board until we find a match
@@ -224,47 +287,69 @@ class Cell:
         # Code should never reeach this point
         print("This error should not occur, if you are reading this message I'm impressed")
 
+
+
     """
-    This function will take a given cell and check if it can make a connect4 in the following directions:
-        - Up
-        - Right
-        - Diagonal Up and Right
-        - Diagonal Down and Right
+    okay this is like my third time writing this damn function
 
-    First it checks if it has a disc in it, there's no point running the rest of the script if its never gonna come up with anyhting
-    that's just wasing precious computing power which could be used for playing fortnite
-    
-    In each direction it will
-    - Check if there are 4 cells in that direction to check (e.g a disc at the top of the board won't be able to make a connect4 upwards)
-    - If there are 4 cells, then it will add up all these cells into a list 
-    - This list is essentially a combination of all cells that make up a possible connect4
-    - All of these combinations all get added into a second list
-    - All combinations in this list will get iterated through and for each combinmation:
-        - We check if all cells are the same type (e.g all red, all yellow)
-        - If they are all red we incriment player1's score
-        - If they are yellow we incriment player2's score
 
-    We use min and max functions to ensure that the cell doesn't check for cells outside
+    this function runs from a given cell
+    and will return 2 numbers, being the amount of points this cell
+    contributes to both players scores
+
+    (reading this now it'll only ever contribute to one players score
+    so returning two numbers is kinda pointless but i can't be bothered
+    rewriting this function again for a slight increase in efficiency)
+
+    anyway back to how this function works
+    it will generate 4 "combinations", stored in 4 lists
+    each list will contain 4 cells which make up a "combination"
+    e.g one list will contain 4 cells that are next to each other horizontally
+    making up a horizontal "combination" that can award points if a player
+    has a disc in all of them
+
+    Each cell in the grid can act as the start of the following combinations:
+        - horizontally (to 3 cells right)
+        - vertically (to 3 cells above)
+        - Diagonally (to 3 cells up and right)
+        - Diagonally, again (to 3 cells down and right)
+
+    Then we iterate through these combinations and for each combination
+    we check if they all discs belonging to one player (e.g all Xs or all Os)
+    and iterate a running tally for each
+
+    once we have iterated through each combination, we return each player's
+    points that this cell contributes to
+
+
     """
     def checkConnectFours(self):
 
         # Don't continue with the function if this cell doesn't have a disc
+        # empty cells can't score ykyk
         if self.type not in ["r", "y"]: 
             return 0, 0
 
+        # Get the cells co ordinates
         x, y = self.getPosition()
 
+        # Initialise our running totals for each player
         player1Total = 0
         player2Total = 0
 
+        # Initialise a list for our combinations
         combinations = []
 
-        ### We check what possible connect4s this cell can start with
+        # We check what possible connect4s this cell can start with
+        # e.g if it is impossible to make a combination 
+        # (like if the 4th cell in a combination goes off the board)
+        # then we don't include that combination to prevent an index out of range error
         canConnectUp = y + 3 <= 5
         canConnectRight = x + 3 <= 6
         canConnectUpRight = canConnectUp and canConnectRight
         canConnectDownRight = y - 3 >= 0 and canConnectRight
 
+        # Initialise the lists for combinations
         upCombination = []
         rightCombination = []
         upRightCombination = []
@@ -277,13 +362,13 @@ class Cell:
             if canConnectUpRight: upRightCombination.append(self.gameBoard.grid[x + i][y + i])
             if canConnectDownRight: downRightCombination.append(self.gameBoard.grid[x + i][y - i])
 
-        
+        # Add all our combinations to our combination array
         if canConnectUp: combinations.append(upCombination)
         if canConnectRight: combinations.append(rightCombination)
         if canConnectUpRight: combinations.append(upRightCombination)
         if canConnectDownRight: combinations.append(downRightCombination)
 
-    
+        # Iterate through our combination
         for combination in combinations:
             # If the cells in the combination match
             if combination[0].getType() == combination[1].getType() == combination[2].getType() == combination[3].getType():

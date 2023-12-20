@@ -53,8 +53,11 @@ This is what an example board will look like (shrunk because space)
 | ⬛ | 🟨 |
 -----------
 
-That's the game plan
-TODO work on it tomorrow, im eepy
+UPDATE 19/12/23
+ok so like i've got most of this done (bar removing discs and the game actually finishing lol)
+anyway so the game isn't gonna use emojis for the icons anymore because cmd doesn't like it
+anyway so now obstructions are █, player 1 is now O, and player 2 is now X
+
 """
 
 # Import our classes for our game and other wacky libraries
@@ -100,6 +103,7 @@ def PlayGame():
                     print("You have already used your special disk, skipping turn")
                     # 3 second break between turns to player can read outputs
                     time.sleep(3)  
+
                 
         else:
             # 3 second break between turns to player can read outputs
