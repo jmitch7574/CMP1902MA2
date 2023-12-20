@@ -7,7 +7,7 @@ import random
 from mathsfunctions import *
 
 """
-The Gameboard stores all cells
+The game stores all cells
 The cells are stored in a 2D array that goes column by column
 
 Row by row is generally better for board games as it makes more visual sense
@@ -33,8 +33,10 @@ class Game:
     def __init__(self, obstructionSizeX, obstructionSizeY):
 
         # Initialise our 2D grid array
-        self.grid = self.generateBoard(obstructionSizeX, obstructionSizeY)
+        self.board = self.generateBoard(obstructionSizeX, obstructionSizeY)
 
+    def getBoard(self):
+        return self.board
     
     def generateBoard(self, obstructionSizeX, obstructionSizeY):
         
@@ -136,7 +138,7 @@ class Game:
 
 
     """
-    A function that checks if the gameboard is full (our game end criteria)
+    A function that checks if the game is full (our game end criteria)
     Iterates through every cell in the grid, returning false and breaking out
     as soon as an empty one is found (grid cannot be full)
 
@@ -198,7 +200,7 @@ class Game:
 Dictionary that contians string representations of our 
 different cell types
 """
-gameBoardIcons = {
+gameIcons = {
     "e": " ",
     "r": "O",
     "y": "X",
@@ -216,15 +218,15 @@ class Cell:
     """
     Initialisation function
     if this cell is an obstruction, then change type accordingly
-    store a reference to the gameboard
+    store a reference to the game
     """
-    def __init__(self, isObstruct, gameBoard):
+    def __init__(self, isObstruct, game):
         if isObstruct:
             self.type = "o"
         else:
             self.type = "e"
 
-        self.gameBoard = gameBoard
+        self.game = game
 
 
     """
@@ -262,15 +264,15 @@ class Cell:
             return
         
         # remove cell and add empty cell at the top of the column
-        self.gameBoard.grid[x].append(Cell(False, self.gameBoard))
-        self.gameBoard.grid[x].remove(self)
+        self.game.getBoard()[x].append(Cell(False, self.game))
+        self.game.getBoard()[x].remove(self)
 
     """
-    use the gameBoardIcons dictionary
+    use the gameIcons dictionary
     return string representation of cell's type
     """
     def __str__(self):
-        return gameBoardIcons[self.type]
+        return gameIcons[self.type]
     
     """
     get the x and y co-ordinates (as indexes) of the current cell's
@@ -281,7 +283,7 @@ class Cell:
         # Iterate through every cell in the board until we find a match
         for x in range(7):
             for y in range(6):
-                if self.gameBoard.grid[x][y] == self:
+                if self.game.getBoard()[x][y] == self:
                     return x, y
         
         # Code should never reeach this point
@@ -357,10 +359,10 @@ class Cell:
 
         ## Add all 4 cells that make up the different connections to their respective lists
         for i in range(4):
-            if canConnectUp: upCombination.append(self.gameBoard.grid[x][y + i])
-            if canConnectRight: rightCombination.append(self.gameBoard.grid[x + i][y])
-            if canConnectUpRight: upRightCombination.append(self.gameBoard.grid[x + i][y + i])
-            if canConnectDownRight: downRightCombination.append(self.gameBoard.grid[x + i][y - i])
+            if canConnectUp: upCombination.append(self.game.getBoard()[x][y + i])
+            if canConnectRight: rightCombination.append(self.game.getBoard()[x + i][y])
+            if canConnectUpRight: upRightCombination.append(self.game.getBoard()[x + i][y + i])
+            if canConnectDownRight: downRightCombination.append(self.game.getBoard()[x + i][y - i])
 
         # Add all our combinations to our combination array
         if canConnectUp: combinations.append(upCombination)
@@ -378,3 +380,29 @@ class Cell:
                     player2Total += 1
 
         return player1Total, player2Total
+    
+
+class Player:
+    def __init__(self, playerNum):
+        self.playerNum = playerNum
+        self.playerType = "r" if playerNum == 1 else "y"
+        self.score = 0
+        self.hasSpecialDisc = True
+
+    def getScore(self):
+        return self.score
+    
+    def setScore(self, score : int):
+        self.score = score
+    
+    def getPlayerNum(self):
+        return self.playerNum
+    
+    def getPlayerType(self):
+        return self.playerType
+    
+    def hasSpecialDisc(self):
+        return self.hasSpecialDisc
+    
+    def setSpecialDisk(self, value : bool):
+        self.hasSpecialDisc = value

@@ -67,14 +67,11 @@ from inputfunctions import *
 def PlayGame():
 
     # Boolean variable, Player 1's turn when True, Player 2's turn when False
-    player1Turn = True
+    playerOneTurn = True
 
-    # Initialise Player Scores
-    player1Score = 0
-    player2Score = 0
-
-    player1SpecialDisk = True
-    player2SpecialDisk = True
+    # Initialise Player Variables
+    playerOne = Player(1)
+    playerTwo = Player(2)
 
     # Boolean variable, Game continues while true, game ends when false
     playing = True
@@ -84,26 +81,27 @@ def PlayGame():
     board = Game(obstructionSizeX, obstructionSizeY)
 
     while playing:
-        print(board)
-        print(f"\n Player 1 Score: {player1Score}\n Player 2 Score: {player2Score}")
 
-        playerAction = inputAction(player1Turn)
+        currentPlayer = playerOne if playerOneTurn else playerTwo
+
+        playerAction = inputAction(currentPlayer)
+        print(board)
+        print(f"\n Player 1 Score: {playerOne.getScore()}\n Player 2 Score: {playerTwo.getScore()}")
+
 
         if playerAction:
+
             if playerAction[0] == "p":
-                board.placeDisc("r" if player1Turn else "y", playerAction[1], False)
+                board.placeDisc(currentPlayer.getPlayerType(), playerAction[1], False)
+            
             if playerAction[0] == "s":
-                if player1Turn and player1SpecialDisk:
-                    board.placeDisc("r", playerAction[1], True)
-                    player1SpecialDisk = False
-                elif not player1Turn and player2SpecialDisk:
-                    board.placeDisc("r", playerAction[1], True)
-                    player2SpecialDisk = False
+                if currentPlayer.hasSpecialDisc():
+                    board.placeDisc(currentPlayer.getPlayerType(), playerAction[1], True)
+                    currentPlayer.setSpecialDisk(False)
                 else:
                     print("You have already used your special disk, skipping turn")
                     # 3 second break between turns to player can read outputs
                     time.sleep(3)  
-
                 
         else:
             # 3 second break between turns to player can read outputs
@@ -113,6 +111,8 @@ def PlayGame():
         player1Turn = not player1Turn
 
         player1Score, player2Score = board.checkScores()
+        playerOne.setScore(player1Score)
+        playerTwo.setScore(player2Score)
 
 
 def GameSettings():

@@ -144,12 +144,12 @@ then just tell the player "you took to long tough shit" if they took longer than
 
 The user only gets one attempt at input, if it is invalid it just skips their turn (skill issue)
 """
-def inputAction(player1):
+def inputAction(currentPlayer):
     # Make a record of  the current timestamp of when the player was asked for input
     startTime = time.time()
 
     # Ask the player for input
-    playerInput = input(f"Please enter your action, {'Player 1' if player1 else 'Player 2'}:").lower()
+    playerInput = input(f"Please enter your action, Player {currentPlayer.getPlayerNum()}:").lower()
 
     # Initialise Return variables
     action = ""
