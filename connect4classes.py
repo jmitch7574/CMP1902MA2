@@ -7,11 +7,11 @@ import random
 from mathsfunctions import *
 
 """
-The game stores all cells
+The game class stores the game board and all functions to do with modifying the game board
 The cells are stored in a 2D array that goes column by column
 
 Row by row is generally better for board games as it makes more visual sense
-you start at [0, 0] in the top right, go to the end of the row and start on the next one
+you start at [0, 0] in the top left, go to the end of the row and start on the next one
 until you get to the bottom right corner [height, width]
 
 Due to the nature of connect4 having a large reliance on columns
@@ -19,24 +19,30 @@ it'll make it easier to write certain functions (such as discs falling)
 especially with removing discs, if the bottom of the column (index 0) is removed
 then every disc above it moves down one, e.g index 1 will now be at index 0
 
-The only downside to this is that printing out the board becomes a bit trickier
+The only downside to this is that i had to use some 
+voodoo magic to get it printing the right way
 and the board in general becomes slightly harder to visualise
-(worth it in my opinion to avoid spaghetti code everywhere else)
-
+(worth it in my opinion to avoid spaghetti code everywhere else, 
+especially for falling discs)
 """
+
 class Game:
 
     """
     Initialise function
     Creates a blank game board with obstruction cells
     """
-    def __init__(self, obstructionSizeX, obstructionSizeY):
+    def __init__(self, obstructionSizeX, obstructionSizeY, discsForConnection):
 
         # Initialise our 2D grid array
         self.board = self.generateBoard(obstructionSizeX, obstructionSizeY)
+        self.discsForConnection = discsForConnection
 
     def getBoard(self):
         return self.board
+    
+    def getDiscsForConnection(self):
+        return self.discsForConnection
     
     def generateBoard(self, obstructionSizeX, obstructionSizeY):
         
@@ -77,14 +83,10 @@ class Game:
     This function will return false if it can't place a disc
     """
     def placeDisc(self, player, columnNo, isSpecialDisc):
-
-        # Columns are labelled ingame as 1-6
-        columnNo -= 1
-
         # Iterate through all cells in our column
         for r in range(6):
             # Assign current cell to variable
-            cell = self.grid[columnNo][r]
+            cell = self.board[columnNo][r]
 
             # Use cell function to see if it is empty
             if cell.isEmpty():
@@ -104,7 +106,7 @@ class Game:
                                 continue
 
                             
-                            self.grid[columnNo + x][r + y].destroy()
+                            self.board[columnNo + x][r + y].destroy()
 
 
 
@@ -130,7 +132,7 @@ class Game:
 
         for x in range(7):
             for y in range(6):
-                player1CellScore, player2CellScore = self.grid[x][y].checkConnectFours()
+                player1CellScore, player2CellScore = self.board[x][y].checkConnections()
                 player1Score += player1CellScore
                 player2Score += player2CellScore
         
@@ -147,7 +149,7 @@ class Game:
     """
     def endGameCheck(self):
         # double for loop to iterate through 2D array
-        for column in self.grid:
+        for column in self.board:
             for cell in column:
                 # Is current cell empty?
                 if cell.isEmpty():
@@ -156,6 +158,25 @@ class Game:
 
         # No empty cells found, grid is full, return true
         return True
+
+    """
+    Function that allows a player to remove the bottom disc from a column
+    Only if said disc belongs to them
+    If it does belong, destroy the disc and return True (success)
+    else return False (failure)
+    """
+    def tryRemoveDisc(self, playerType, columnNo):
+        # Get selected cell
+        cell = self.board[columnNo][0]
+
+        # Is it one of the players discs
+        if cell.getType() == playerType:
+            # remmove cell and return true (success)
+            cell.destroy()
+            return True
+        # Cell isn't one of the players discs, return False (failure)
+        else:
+            return False
 
 
     """
@@ -185,7 +206,7 @@ class Game:
             #iterate through columns
             for c in range(7):
                 # Add cell to row
-                rowString += f" {self.grid[c][r]} |"
+                rowString += f" {self.board[c][r]} |"
 
             # Add another row separator and a new line
             rowString += separator
@@ -232,7 +253,6 @@ class Cell:
     """
     get and set functions for the "type" attribute
     """
-
     def getType(self):
         return self.type
 
@@ -325,12 +345,14 @@ class Cell:
 
 
     """
-    def checkConnectFours(self):
+    def checkConnections(self):
 
         # Don't continue with the function if this cell doesn't have a disc
         # empty cells can't score ykyk
         if self.type not in ["r", "y"]: 
             return 0, 0
+        
+        discsForConnection = self.game.getDiscsForConnection()
 
         # Get the cells co ordinates
         x, y = self.getPosition()
@@ -346,10 +368,10 @@ class Cell:
         # e.g if it is impossible to make a combination 
         # (like if the 4th cell in a combination goes off the board)
         # then we don't include that combination to prevent an index out of range error
-        canConnectUp = y + 3 <= 5
-        canConnectRight = x + 3 <= 6
+        canConnectUp = y + discsForConnection - 1 <= 5
+        canConnectRight = x + discsForConnection - 1 <= 6
         canConnectUpRight = canConnectUp and canConnectRight
-        canConnectDownRight = y - 3 >= 0 and canConnectRight
+        canConnectDownRight = y - discsForConnection - 1 >= 0 and canConnectRight
 
         # Initialise the lists for combinations
         upCombination = []
@@ -358,7 +380,7 @@ class Cell:
         downRightCombination = []
 
         ## Add all 4 cells that make up the different connections to their respective lists
-        for i in range(4):
+        for i in range(discsForConnection):
             if canConnectUp: upCombination.append(self.game.getBoard()[x][y + i])
             if canConnectRight: rightCombination.append(self.game.getBoard()[x + i][y])
             if canConnectUpRight: upRightCombination.append(self.game.getBoard()[x + i][y + i])
@@ -373,7 +395,7 @@ class Cell:
         # Iterate through our combination
         for combination in combinations:
             # If the cells in the combination match
-            if combination[0].getType() == combination[1].getType() == combination[2].getType() == combination[3].getType():
+            if self.doCellsMatch(combination):
                 if combination[0].getType() == "r":
                     player1Total += 1
                 if combination[0].getType() == "y":
@@ -381,7 +403,18 @@ class Cell:
 
         return player1Total, player2Total
     
+    def doCellsMatch(self, combination):
+        typeMatch = combination[0].getType()
 
+        for cell in combination:
+            if cell.getType() != typeMatch:
+                return False
+        return True
+
+
+"""
+Class to hold all player attributes
+"""
 class Player:
     def __init__(self, playerNum):
         self.playerNum = playerNum
@@ -389,16 +422,19 @@ class Player:
         self.score = 0
         self.hasSpecialDisc = True
 
+    """
+    its just getters and setters
+    """
     def getScore(self):
         return self.score
     
     def setScore(self, score : int):
         self.score = score
     
-    def getPlayerNum(self):
+    def getNum(self):
         return self.playerNum
     
-    def getPlayerType(self):
+    def getType(self):
         return self.playerType
     
     def hasSpecialDisc(self):

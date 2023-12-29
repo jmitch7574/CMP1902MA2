@@ -76,50 +76,74 @@ def PlayGame():
     # Boolean variable, Game continues while true, game ends when false
     playing = True
 
-    obstructionSizeX, obstructionSizeY = GameSettings()
+    obstructionSizeX, obstructionSizeY, discsForConnection = GameSettings()
 
-    board = Game(obstructionSizeX, obstructionSizeY)
+    board = Game(obstructionSizeX, obstructionSizeY, discsForConnection)
 
     while playing:
 
         currentPlayer = playerOne if playerOneTurn else playerTwo
 
-        playerAction = inputAction(currentPlayer)
         print(board)
         print(f"\n Player 1 Score: {playerOne.getScore()}\n Player 2 Score: {playerTwo.getScore()}")
-
+        playerAction = inputAction(currentPlayer)
 
         if playerAction:
 
             if playerAction[0] == "p":
-                board.placeDisc(currentPlayer.getPlayerType(), playerAction[1], False)
+                board.placeDisc(currentPlayer.getType(), playerAction[1]-1, False)
             
             if playerAction[0] == "s":
                 if currentPlayer.hasSpecialDisc():
-                    board.placeDisc(currentPlayer.getPlayerType(), playerAction[1], True)
+                    board.placeDisc(currentPlayer.getType(), playerAction[1]-1, True)
                     currentPlayer.setSpecialDisk(False)
                 else:
                     print("You have already used your special disk, skipping turn")
                     # 3 second break between turns to player can read outputs
-                    time.sleep(3)  
+                    time.sleep(3) 
+                    
+            
+            if playerAction[0] == "r":
+                success = board.tryRemoveDisc(currentPlayer.getType(), playerAction[1]-1)
+
+                if not success:
+                    print("Failed to remove disc (either no disc is present or is opponents disc)")
+                    print("Skipping turn...")
+                    time.sleep(3)
+
                 
         else:
             # 3 second break between turns to player can read outputs
             time.sleep(3)   
 
         # Invert our player boolean, switching which player turn it is
-        player1Turn = not player1Turn
+        playerOneTurn = not playerOneTurn
 
         player1Score, player2Score = board.checkScores()
         playerOne.setScore(player1Score)
         playerTwo.setScore(player2Score)
 
+        if board.endGameCheck():
+            playing = False
+
+    print(board)
+    print("{:=^30}".format("GAME OVER"))
+    print("{: ^30}".format("Player 1 Score: " + str(playerOne.getScore())))
+    print("{: ^30}".format("Player 2 Score: " + str(playerTwo.getScore())))
+
+    if playerOne.getScore() == playerTwo.getScore():
+        print("Tie")
+    elif playerOne.getScore() > playerTwo.getScore():
+        print("Player One Wins")
+    else:
+        print("Player Two Wins")
 
 def GameSettings():
     obstructionSizeX = inputInteger("Please enter the width of the obstruction: ", min=0, max=7)
     obstructionSizeY = inputInteger("Please enter the height of the obstruction: ", min=0, max=6)
+    discsForConnection = inputInteger("Please enter how many discs in a row form a connection (minimum 2): ", min=2, max=7)
 
-    return obstructionSizeX, obstructionSizeY
+    return obstructionSizeX, obstructionSizeY, discsForConnection
 
 
 if __name__== "__main__":
@@ -127,4 +151,6 @@ if __name__== "__main__":
 
     while Playing:
         PlayGame()
+
+        Playing = inputYesNo("Would you like to play again?")
 

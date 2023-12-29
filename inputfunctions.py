@@ -103,9 +103,6 @@ def inputYesNo(message):
     # We create a boolean variable to store if input is valid or not
     validInput = False
 
-    # This is our return variable, initialised with 0
-    intInput = 0
-
     # Repeatedly ask the user for an input until a valid one is received
     while not validInput:
         # We treat all input as valid until until it breaks a criteria
@@ -149,7 +146,7 @@ def inputAction(currentPlayer):
     startTime = time.time()
 
     # Ask the player for input
-    playerInput = input(f"Please enter your action, Player {currentPlayer.getPlayerNum()}:").lower()
+    playerInput = input(f"Please enter your action, Player {currentPlayer.getNum()}:").lower()
 
     # Initialise Return variables
     action = ""
