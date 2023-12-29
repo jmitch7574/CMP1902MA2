@@ -85,18 +85,18 @@ def PlayGame():
         currentPlayer = playerOne if playerOneTurn else playerTwo
 
         print(board)
-        print(f"\n Player 1 Score: {playerOne.getScore()}\n Player 2 Score: {playerTwo.getScore()}")
+        print(f"\n Player 1 Score: {playerOne.score}\n Player 2 Score: {playerTwo.score}")
         playerAction = inputAction(currentPlayer)
 
         if playerAction:
 
             if playerAction[0] == "p":
-                board.placeDisc(currentPlayer.getType(), playerAction[1]-1, False)
+                board.placeDisc(currentPlayer.type, playerAction[1]-1, False)
             
             if playerAction[0] == "s":
-                if currentPlayer.hasSpecialDisc():
-                    board.placeDisc(currentPlayer.getType(), playerAction[1]-1, True)
-                    currentPlayer.setSpecialDisk(False)
+                if currentPlayer.hasSpecialDisc:
+                    board.placeDisc(currentPlayer.type, playerAction[1]-1, True)
+                    currentPlayer.hasSpecialDisc = False
                 else:
                     print("You have already used your special disk, skipping turn")
                     # 3 second break between turns to player can read outputs
@@ -104,7 +104,7 @@ def PlayGame():
                     
             
             if playerAction[0] == "r":
-                success = board.tryRemoveDisc(currentPlayer.getType(), playerAction[1]-1)
+                success = board.tryRemoveDisc(currentPlayer.type, playerAction[1]-1)
 
                 if not success:
                     print("Failed to remove disc (either no disc is present or is opponents disc)")
@@ -120,20 +120,20 @@ def PlayGame():
         playerOneTurn = not playerOneTurn
 
         player1Score, player2Score = board.checkScores()
-        playerOne.setScore(player1Score)
-        playerTwo.setScore(player2Score)
+        playerOne.score = player1Score
+        playerTwo.score = player2Score
 
         if board.endGameCheck():
             playing = False
 
     print(board)
     print("{:=^30}".format("GAME OVER"))
-    print("{: ^30}".format("Player 1 Score: " + str(playerOne.getScore())))
-    print("{: ^30}".format("Player 2 Score: " + str(playerTwo.getScore())))
+    print("{: ^30}".format("Player 1 Score: " + str(playerOne.score)))
+    print("{: ^30}".format("Player 2 Score: " + str(playerTwo.score)))
 
-    if playerOne.getScore() == playerTwo.getScore():
+    if playerOne.score == playerTwo.score:
         print("Tie")
-    elif playerOne.getScore() > playerTwo.getScore():
+    elif playerOne.score > playerTwo.score:
         print("Player One Wins")
     else:
         print("Player Two Wins")

@@ -146,7 +146,7 @@ def inputAction(currentPlayer):
     startTime = time.time()
 
     # Ask the player for input
-    playerInput = input(f"Please enter your action, Player {currentPlayer.getNum()}:").lower()
+    playerInput = input(f"Please enter your action, Player {currentPlayer.num}:").lower()
 
     # Initialise Return variables
     action = ""

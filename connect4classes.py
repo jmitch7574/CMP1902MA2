@@ -37,12 +37,6 @@ class Game:
         # Initialise our 2D grid array
         self.board = self.generateBoard(obstructionSizeX, obstructionSizeY)
         self.discsForConnection = discsForConnection
-
-    def getBoard(self):
-        return self.board
-    
-    def getDiscsForConnection(self):
-        return self.discsForConnection
     
     def generateBoard(self, obstructionSizeX, obstructionSizeY):
         
@@ -112,7 +106,7 @@ class Game:
 
                 else:
                     # Set the first empty cell to the players disc
-                    cell.changeType(player)
+                    cell.type = player
 
                     # Successfully placed disc, return true
                     return True
@@ -170,7 +164,7 @@ class Game:
         cell = self.board[columnNo][0]
 
         # Is it one of the players discs
-        if cell.getType() == playerType:
+        if cell.type == playerType:
             # remmove cell and return true (success)
             cell.destroy()
             return True
@@ -249,16 +243,6 @@ class Cell:
 
         self.game = game
 
-
-    """
-    get and set functions for the "type" attribute
-    """
-    def getType(self):
-        return self.type
-
-    def changeType(self, type):
-        self.type = type
-
     """
     return true if the cell is empty
     returns false if the cell is an obstruction, or has a player disc
@@ -284,8 +268,8 @@ class Cell:
             return
         
         # remove cell and add empty cell at the top of the column
-        self.game.getBoard()[x].append(Cell(False, self.game))
-        self.game.getBoard()[x].remove(self)
+        self.game.board[x].append(Cell(False, self.game))
+        self.game.board[x].remove(self)
 
     """
     use the gameIcons dictionary
@@ -303,7 +287,7 @@ class Cell:
         # Iterate through every cell in the board until we find a match
         for x in range(7):
             for y in range(6):
-                if self.game.getBoard()[x][y] == self:
+                if self.game.board[x][y] == self:
                     return x, y
         
         # Code should never reeach this point
@@ -352,7 +336,7 @@ class Cell:
         if self.type not in ["r", "y"]: 
             return 0, 0
         
-        discsForConnection = self.game.getDiscsForConnection()
+        discsForConnection = self.game.discsForConnection
 
         # Get the cells co ordinates
         x, y = self.getPosition()
@@ -381,10 +365,10 @@ class Cell:
 
         ## Add all 4 cells that make up the different connections to their respective lists
         for i in range(discsForConnection):
-            if canConnectUp: upCombination.append(self.game.getBoard()[x][y + i])
-            if canConnectRight: rightCombination.append(self.game.getBoard()[x + i][y])
-            if canConnectUpRight: upRightCombination.append(self.game.getBoard()[x + i][y + i])
-            if canConnectDownRight: downRightCombination.append(self.game.getBoard()[x + i][y - i])
+            if canConnectUp: upCombination.append(self.game.board[x][y + i])
+            if canConnectRight: rightCombination.append(self.game.board[x + i][y])
+            if canConnectUpRight: upRightCombination.append(self.game.board[x + i][y + i])
+            if canConnectDownRight: downRightCombination.append(self.game.board[x + i][y - i])
 
         # Add all our combinations to our combination array
         if canConnectUp: combinations.append(upCombination)
@@ -396,18 +380,18 @@ class Cell:
         for combination in combinations:
             # If the cells in the combination match
             if self.doCellsMatch(combination):
-                if combination[0].getType() == "r":
+                if combination[0].type == "r":
                     player1Total += 1
-                if combination[0].getType() == "y":
+                if combination[0].type == "y":
                     player2Total += 1
 
         return player1Total, player2Total
     
     def doCellsMatch(self, combination):
-        typeMatch = combination[0].getType()
+        typeMatch = combination[0].type
 
         for cell in combination:
-            if cell.getType() != typeMatch:
+            if cell.type != typeMatch:
                 return False
         return True
 
@@ -417,28 +401,7 @@ Class to hold all player attributes
 """
 class Player:
     def __init__(self, playerNum):
-        self.playerNum = playerNum
-        self.playerType = "r" if playerNum == 1 else "y"
+        self.num = playerNum
+        self.type = "r" if playerNum == 1 else "y"
         self.score = 0
         self.hasSpecialDisc = True
-
-    """
-    its just getters and setters
-    """
-    def getScore(self):
-        return self.score
-    
-    def setScore(self, score : int):
-        self.score = score
-    
-    def getNum(self):
-        return self.playerNum
-    
-    def getType(self):
-        return self.playerType
-    
-    def hasSpecialDisc(self):
-        return self.hasSpecialDisc
-    
-    def setSpecialDisk(self, value : bool):
-        self.hasSpecialDisc = value
