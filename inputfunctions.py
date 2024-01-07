@@ -9,8 +9,6 @@ This file is used by both task1.py and task2.py
 Function for checking if a given string can be cast as an integer
 This function takes a string as a parameter and will return an integer
 if the string can be cast as one. Else it will return "None"
-
-Loosely imitates the function of string.isnumeric()
 """
 def tryInt(string):
     # We use a try except statement to see if the string can be cast as an int
@@ -29,21 +27,8 @@ A valid input is one which does not break the following criteria:
 - Only contains numeric characters (no strings)
 - Does not contain a decimal value
 
-Validation for these rules works on a "innocent until proven guilty" basis
-We assume input is valid until it breaks one of the above criteria
-
-We include options for a minimum value and maximum value
-If the inputted integer is lower than the minumum or 
-larger than the maximum then its is marked invalid
-
-!!!IMPORTANT - MINIMUM AND MAXIMUM ARE INCLUSIVE
-
-We include the option for a "stop code" which will cancel the input
-If no stop code is included when the funciton is called then we do not allow cancel
-If a stop code is provided we check if the input matches the stop code and return None
-
-Stop code will mostly be used for inputting multiple integers (like in task 1)
-But of course we still have the option of forcing an integer input
+Can provide minimum and maximum
+"Stop code" returns none (used for looping inputs)
 """
 def inputInteger(message, min=None, max=None, stopCode = None):
     # We create a boolean variable to store if input is valid or not
@@ -96,6 +81,10 @@ def inputInteger(message, min=None, max=None, stopCode = None):
     # return our valid input
     return intInput
 
+
+"""
+Boolean Inputs
+"""
 def inputYesNo(message):
     yesAnswers = ["yes", "y"]
     noAnswers = ["no", "n"]
@@ -178,4 +167,4 @@ def inputAction(currentPlayer):
         return False
 
     # Return both action and collumn
-    return [action, column]
+    return (action, column)

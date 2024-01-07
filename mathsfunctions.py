@@ -101,20 +101,6 @@ def maximum(list):
     # return our minimum
     return maximum
 
-
-
-"""
-These functions are all about finding any prime numbers in a given list of integers
-One function finds all the factors of a number and returns them as a list
-The other function will check if this list of factors only contains one and itself
-The prime function will return True or False
-
-You can write this as just one function that checks for factors and return false as soon
-as you find a factor that isn't 1 or itself (would be slightly more efficient). But you 
-never know when having a factors function might come in handy.
-"""
-
-
 """
 The factors function loops through all numbers between 1 and our given number
 It uses the modal function to check if our iterated number is a factor of our given number
@@ -136,6 +122,7 @@ def getFactors(number):
     
     # Return our list of factors
     return factors
+
 
 """
 This function uses the getFactors function above and just checks if the only factors

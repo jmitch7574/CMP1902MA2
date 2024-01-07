@@ -5,25 +5,14 @@ We have 4 classes, one for the game board, one for the cells of the board, and o
 
 import random
 from mathsfunctions import *
+import time
 
 """
 The game class stores the game board and all functions to do with modifying the game board
 The cells are stored in a 2D array that goes column by column
 
-Row by row is generally better for board games as it makes more visual sense
-you start at [0, 0] in the top left, go to the end of the row and start on the next one
-until you get to the bottom right corner [height, width]
-
-Due to the nature of connect4 having a large reliance on columns
-it'll make it easier to write certain functions (such as discs falling)
-especially with removing discs, if the bottom of the column (index 0) is removed
-then every disc above it moves down one, e.g index 1 will now be at index 0
-
-The only downside to this is that i had to use some 
-voodoo magic to get it printing the right way
-and the board in general becomes slightly harder to visualise
-(worth it in my opinion to avoid spaghetti code everywhere else, 
-especially for falling discs)
+Game is stored as column by column, makes it easier to manage columns 
+only downside is voodoo magic is required to print board
 """
 
 class Game:
@@ -46,13 +35,15 @@ class Game:
         # Initialise 2d array
         grid = []
 
+        # 7 Columns
         for x in range(7):
-            column = []
-            for y in range(6):
 
-                # Boolean checks to see if current cell is an obstruction
-                # Checks x co-ordinate is between the x co-ordinate of our obstruction + the obstructions width
-                # Obstruction always starts at bottom row so we check if y co-ordinate is below the obstructions height
+            # Initialise Empty column
+            column = []
+
+            # 6 Cells per column (rows)
+            for y in range(6):
+                # Check if this cell should be an obstruction
                 obstructionXCheck = obstructionX <= x < obstructionX + obstructionSizeX
                 obstructionYCheck = y < obstructionSizeY
 
@@ -101,9 +92,6 @@ class Game:
 
                             
                             self.board[columnNo + x][r + y].destroy()
-
-
-
                 else:
                     # Set the first empty cell to the players disc
                     cell.type = player
@@ -112,6 +100,9 @@ class Game:
                     return True
             
         # This line of code is only reached if we failed to place disc, return false
+        # time.sleep so the player has time to understand the consequences of their actions
+        print("Column is full, skipping turn")
+        time.sleep(3)
         return False
 
 
@@ -135,11 +126,8 @@ class Game:
 
     """
     A function that checks if the game is full (our game end criteria)
-    Iterates through every cell in the grid, returning false and breaking out
-    as soon as an empty one is found (grid cannot be full)
-
-    If the function finishes iterating, and can't find any empty cells
-    then the board is full and returns True
+    Iterates through every cell in the grid, if cell is empty then we return false and stop
+    Return true if we finish iterating without finding empty cell
     """
     def endGameCheck(self):
         # double for loop to iterate through 2D array
@@ -154,10 +142,9 @@ class Game:
         return True
 
     """
-    Function that allows a player to remove the bottom disc from a column
-    Only if said disc belongs to them
-    If it does belong, destroy the disc and return True (success)
-    else return False (failure)
+    Function that allows a player to remove the bottom disc from a column 
+    only if said disc belongs to them
+    returns True if successful, false if failure
     """
     def tryRemoveDisc(self, playerType, columnNo):
         # Get selected cell
@@ -172,6 +159,12 @@ class Game:
         else:
             return False
 
+    """
+    Function for getting a cell
+    take a tuple argument including x and y
+    """
+    def getCell(self, coord):
+        return self.board[coord[0]][coord[1]]
 
     """
     Override string cast function to make the board game look nice when printed out
@@ -232,8 +225,6 @@ class Cell:
     
     """
     Initialisation function
-    if this cell is an obstruction, then change type accordingly
-    store a reference to the game
     """
     def __init__(self, isObstruct, game):
         if isObstruct:
@@ -244,26 +235,21 @@ class Cell:
         self.game = game
 
     """
-    return true if the cell is empty
-    returns false if the cell is an obstruction, or has a player disc
+    return true if the cell is empty, else false
     """
     def isEmpty(self):
         return self.type == "e"
 
     """
     Deletes the cell from the column
-    Due to how the grid is structured, once a cell at position x is removed
-    from the column list, then the cell at position x + 1 will automatically
-    now be at position x
-
-    Columns need to maintain a specific length so once a cell is deleted
-    then a new empty cell is appended (placed at the top)
+    All cells above fall down one index
+    Adds empty cell to top of column
     """
     def destroy(self):
         # Get cell's position
         x, y = self.getPosition()
 
-        # OBSTRUCTIONS ARE FUCKING INVINCIBLE!!!
+        # Obstructions can't be destroyed
         if self.type == "o":
             return
         
@@ -296,38 +282,10 @@ class Cell:
 
 
     """
-    okay this is like my third time writing this damn function
-
-
-    this function runs from a given cell
-    and will return 2 numbers, being the amount of points this cell
-    contributes to both players scores
-
-    (reading this now it'll only ever contribute to one players score
-    so returning two numbers is kinda pointless but i can't be bothered
-    rewriting this function again for a slight increase in efficiency)
-
-    anyway back to how this function works
-    it will generate 4 "combinations", stored in 4 lists
-    each list will contain 4 cells which make up a "combination"
-    e.g one list will contain 4 cells that are next to each other horizontally
-    making up a horizontal "combination" that can award points if a player
-    has a disc in all of them
-
-    Each cell in the grid can act as the start of the following combinations:
-        - horizontally (to 3 cells right)
-        - vertically (to 3 cells above)
-        - Diagonally (to 3 cells up and right)
-        - Diagonally, again (to 3 cells down and right)
-
-    Then we iterate through these combinations and for each combination
-    we check if they all discs belonging to one player (e.g all Xs or all Os)
-    and iterate a running tally for each
-
-    once we have iterated through each combination, we return each player's
-    points that this cell contributes to
-
-
+    This function runs from a cell and checks all possible combinations that can be made with this cell as the first one
+    Each disc can be the start of 4 possible combinations, up, right, up right and down right
+    (down and left aren't needed because tokens down to the left will be checking right and up as well)
+    iterate through these combinations and see if any of them all belong to the same player, iterate players score
     """
     def checkConnections(self):
 
@@ -346,52 +304,34 @@ class Cell:
         player2Total = 0
 
         # Initialise a list for our combinations
-        combinations = []
-
-        # We check what possible connect4s this cell can start with
-        # e.g if it is impossible to make a combination 
-        # (like if the 4th cell in a combination goes off the board)
-        # then we don't include that combination to prevent an index out of range error
-        canConnectUp = y + discsForConnection - 1 <= 5
-        canConnectRight = x + discsForConnection - 1 <= 6
-        canConnectUpRight = canConnectUp and canConnectRight
-        canConnectDownRight = y - discsForConnection - 1 >= 0 and canConnectRight
-
-        # Initialise the lists for combinations
-        upCombination = []
-        rightCombination = []
-        upRightCombination = []
-        downRightCombination = []
+        combinations = [[], [], [], []]
 
         ## Add all 4 cells that make up the different connections to their respective lists
         for i in range(discsForConnection):
-            if canConnectUp: upCombination.append(self.game.board[x][y + i])
-            if canConnectRight: rightCombination.append(self.game.board[x + i][y])
-            if canConnectUpRight: upRightCombination.append(self.game.board[x + i][y + i])
-            if canConnectDownRight: downRightCombination.append(self.game.board[x + i][y - i])
-
-        # Add all our combinations to our combination array
-        if canConnectUp: combinations.append(upCombination)
-        if canConnectRight: combinations.append(rightCombination)
-        if canConnectUpRight: combinations.append(upRightCombination)
-        if canConnectDownRight: combinations.append(downRightCombination)
+            combinations[0].append([x, y + i])      # Up (incriment y)
+            combinations[1].append([x + i, y])      # Right (incriment x)
+            combinations[2].append([x + i, y + i])  # Up Right (incriment x and y)
+            combinations[3].append([x + i, y - i])  # Down Right (incriment x and decrement y)
 
         # Iterate through our combination
         for combination in combinations:
             # If the cells in the combination match
             if self.doCellsMatch(combination):
-                if combination[0].type == "r":
+                if self.game.getCell(combination[0]).type == "r":
                     player1Total += 1
-                if combination[0].type == "y":
+                if self.game.getCell(combination[0]).type == "y":
                     player2Total += 1
 
         return player1Total, player2Total
     
     def doCellsMatch(self, combination):
-        typeMatch = combination[0].type
+        typeMatch = self.game.getCell(combination[0]).type
 
         for cell in combination:
-            if cell.type != typeMatch:
+            if not(0 <= cell[0] < 7 and 0 <= cell[1] < 6):
+                return False
+
+            if self.game.getCell(cell).type != typeMatch:
                 return False
         return True
 
