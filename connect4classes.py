@@ -173,7 +173,7 @@ class Game:
 
     def __str__(self):
 
-        separator = "\n-----------------------------\n"
+        separator = "\n+---+---+---+---+---+---+---+\n"
 
         # We initialise the string that we're going to return
         returnString = "\n"
