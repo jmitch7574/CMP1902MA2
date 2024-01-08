@@ -5,6 +5,7 @@ We have 4 classes, one for the game board, one for the cells of the board, and o
 
 import random
 from mathsfunctions import *
+from inputfunctions import *
 import time
 
 """
@@ -21,11 +22,89 @@ class Game:
     Initialise function
     Creates a blank game board with obstruction cells
     """
-    def __init__(self, obstructionSizeX, obstructionSizeY, discsForConnection):
+    def __init__(self):
+        
+        # Get our game settings
+        obstructionSizeX, obstructionSizeY, discsForConnection = self.GameSettings()
 
         # Initialise our 2D grid array
         self.board = self.generateBoard(obstructionSizeX, obstructionSizeY)
         self.discsForConnection = discsForConnection
+        
+        
+        print("========================================")
+
+        # Initialise turn count
+        self.turns = 0
+
+        # Initialise Player Variables
+        self.playerOne = Player(1)
+        self.playerTwo = Player(2)
+
+        # Boolean variable, Game continues while true, game ends when false
+        self.playing = True
+
+        # a loop to keep asking players for turns until the game ends
+        while self.playing:
+            self.turn()
+
+        self.gameOver()
+    
+    
+    """
+    Input all the game settings
+    """
+    def GameSettings(self):
+        obstructionSizeX = inputInteger("Please enter the width of the obstruction: ", min=0, max=7)
+        obstructionSizeY = inputInteger("Please enter the height of the obstruction: ", min=0, max=6)
+        discsForConnection = inputInteger("Please enter how many discs in a row form a connection (minimum 2): ", min=2, max=7)
+
+        return obstructionSizeX, obstructionSizeY, discsForConnection
+
+    """
+    Function for a given turn
+    Plays the current players action and updates scores
+    """
+    def turn(self):
+        # End the game if the board is full
+        if self.endGameCheck():
+            self.playing = False
+            return
+
+        # reference to the current player's variable
+        # Player one goes on even turns
+        currentPlayer = self.playerOne if self.turns % 2 == 0 else self.playerTwo
+
+        # Output board and score
+        print(self)
+        print(f"\n Player 1 Score: {self.playerOne.score}\n Player 2 Score: {self.playerTwo.score}")
+
+        currentPlayer.playTurn(self)
+
+        # incriment turns
+        self.turns += 1
+
+        # Update player scores
+        self.playerOne.score, self.playerTwo.score = self.checkScores()
+
+    """
+    Game over function
+    Output player scores and who won
+    """
+    def gameOver(self):
+        # Final outputs, board, scores and who wins
+        print(self)
+        print("{:=^30}".format("GAME OVER"))
+        print("{: ^30}".format("Player 1 Score: " + str(self.playerOne.score)))
+        print("{: ^30}".format("Player 2 Score: " + str(self.playerTwo.score)))
+
+        if self.playerOne.score == self.playerTwo.score:
+            print("{:=^30}".format("Tie"))
+        elif self.playerOne.score > self.playerTwo.score:
+            print("{:=^30}".format("Player One Wins"))
+        else:
+            print("{:=^30}".format("Player Two Wins"))
+
     
     def generateBoard(self, obstructionSizeX, obstructionSizeY):
         
@@ -216,7 +295,7 @@ gameIcons = {
 }
 
 """
-the individual cells have their own class to
+the individual cells have their own class too
 just to contain some functions a cell can perform
 is this at all memory efficient? no.
 does it make things a tad easier to program? hell yeah
@@ -345,3 +424,108 @@ class Player:
         self.type = "r" if playerNum == 1 else "y"
         self.score = 0
         self.hasSpecialDisc = True
+
+    def playTurn(self, board):
+
+        # Special function in inputfunctons.py for inputting player actions
+        # Returns false if invalid input
+        # Returns a tuple containing action type and column number if valid
+        playerAction = self.playerAction()
+
+        # Did we get a valid input
+        if playerAction:
+            
+            # Split our returned value into the action type and the column number
+            actionType, columnNo = playerAction
+
+            # Placing a disc
+            if actionType == "p":
+                board.placeDisc(self.type, columnNo-1, False)
+            
+            # Placing a special disc
+            if actionType == "s":
+                if self.hasSpecialDisc:
+                    board.placeDisc(self.type, columnNo-1, True)
+                    self.hasSpecialDisc = False
+                else:
+                    print("You have already used your special disk, skipping turn")
+                    # 3 second break between turns to player can read outputs
+                    time.sleep(3)
+                    return
+
+            if actionType == "r":
+                success = board.tryRemoveDisc(self.type, columnNo)
+
+                if not success:
+                    print("Failed to remove disc (either no disc is present or is opponents disc)")
+                    print("Skipping turn...")
+                    time.sleep(3)
+                    return
+
+                
+        else:
+            # 3 second break between turns to player can read outputs
+            time.sleep(3)   
+            return
+    
+    """
+    This function manages player inputs for our connect 4 game
+
+    Player inputs are made up of two parts
+
+    1. Action
+        - Placing a disk (p)
+        - Placing a special disk (s)
+        - Removing a disc from a column (r)
+    2. The column to perform the action
+
+    so if a player wanted to place a disk in column 2, their input would be p2
+
+    Players have a 5 second time limit to make an action
+    It'd be near impossible to implement this limitation in real-time without the use of threading
+    The next best thing is to see how long it took the player to make their input
+    then just tell the player "you took to long tough shit" if they took longer than 5 seconds
+
+    The user only gets one attempt at input, if it is invalid it just skips their turn (skill issue)
+    """
+    def playerAction(self):
+        
+        # Make a record of  the current timestamp of when the player was asked for input
+        startTime = time.time() 
+
+        # Ask the player for input
+        playerInput = input(f"Please enter your action, Player {self.num}:").lower()
+
+        # Initialise Return variables
+        action = ""
+        column = 0    
+
+        # A valid input should be two in length
+        if len(playerInput) != 2:
+            print("Invalid input, skipping turn")
+            # We return false if valid input is not received
+            return False
+
+        # We check to see if the first character of our input is a valid action
+        if playerInput[0] in ["p", "s", "r"]:
+            action = playerInput[0]
+        else:
+            print("Invalid Action (must be 'p', 's', or 'r'), skipping turn")
+            return False
+        
+        # We check to see if the second character is an integer
+        column = tryInt(playerInput[1])
+        
+        # If the input isn't an int, or it is an int but not a valid column
+        if not column or not 1 <= column <= 7:
+            print("Invalid Column Number, skipping turn")
+            return False
+
+        # Subtract start time from current time to find time taken
+        # Skip turn if player took more than 5 seconds
+        if time.time() - startTime > 5:
+            print("Action must be inputted within five seconds, skipping turn")
+            return False
+
+        # Return both action and collumn
+        return (action, column)
